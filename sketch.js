@@ -1,6 +1,4 @@
 //Canvas constants
-const CANVAS_WIDTH = 1200;
-const CANVAS_HEIGHT = 650;
 const BGCOLOR_DIV = 40;
 const BG_COLOR = "#000";
 
@@ -24,38 +22,94 @@ const DIR_MAX = DIAG_DR;
 //Color Pallette
 const COLOR_PALLETE = ["#00f", "#0f0", "#f00", "#0ff", "#f0f", "#0ff"];
 
-function setup(){
-    createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+//Initial state boolean
+let buttonPressed;
+
+//Start message vars
+const START_MESSAGE_TEXT = "#TYPEAWAY";
+let startMessageSize, startMessageX, startMessageY;
+
+//Font vars
+let mmdFont;
+
+/*
+* Run once before site loads
+*/
+function preload(){
+    mmdFont = loadFont("fonts/Major_Mono_Display/MajorMonoDisplay-Regular.ttf");
 }
 
-function draw(){
-    //Draw background
-    background(BG_COLOR);
+/*
+* Run at initial load
+*/
+function setup(){
+    createCanvas(windowWidth, windowHeight);
+    textFont(mmdFont);
+    textAlign(CENTER, CENTER);
+    buttonPressed = false;
+    startMessageSize = Math.min(width, height) / 10;
+    startMessageX = width/2;
+    startMessageY = height/2;
+}
 
-    //Draw letters
-    for(i = 0; i < letters.length; i++){
-        let currLet = letters[i];
-        if(currLet.faded()){
-            //Remove faded letter
-            letters.splice(i, 1);
-            i--;
-        }else{
-            currLet.drawAsLine();
-            currLet.move();
-            currLet.fade(1);
+/*
+*   Run every frame
+*/
+function draw(){
+    if(!buttonPressed){
+        fill("white");
+        textSize(startMessageSize);
+        text(START_MESSAGE_TEXT, startMessageX, startMessageY);
+    }else{
+        //Draw background
+        background(BG_COLOR);
+
+        //Draw letters
+        for(i = 0; i < letters.length; i++){
+            let currLet = letters[i];
+            if(currLet.faded()){
+                //Remove faded letter
+                letters.splice(i, 1);
+                i--;
+            }else{
+                currLet.drawAsLine();
+                currLet.move();
+                currLet.fade(1);
+            }
         }
     }
 }
 
+/*
+* Run when window is resized
+*/
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    if(!buttonPressed){
+        startMessageSize = Math.min(width, height) / 10;
+        startMessageX = width/2;
+        startMessageY = height/2;
+    }
+  }
+
+/*
+* Run when key is pressed
+*/
 function keyPressed(){
     if(key.length == 1){
+        if(!buttonPressed){
+            buttonPressed = true;
+            textAlign(LEFT, BASELINE);
+        }
+
         let dir = getRandomInt(0, DIR_MAX);
         let sz = getRandomInt(SIZE_MIN, SIZE_MAX);
         let sp = getRandomInt(SPEED_MIN, SPEED_MAX);
         let clr = color(COLOR_PALLETE[getRandomInt(0, COLOR_PALLETE.length - 1)]);
-        let x = getRandomInt(0, CANVAS_WIDTH);
-        let y = getRandomInt(0, CANVAS_HEIGHT);
+        let x = getRandomInt(0, width);
+        let y = getRandomInt(0, height);
         let newLetter = new Letter(key, COLOR_INCR, dir, sz, sp, clr, x, y);
+
         letters.push(newLetter);
     }
 }
@@ -134,7 +188,7 @@ class Letter{
             //Draw letters down-right of starter
             tempX = this.x + this.size;
             tempY = this.y + this.size;
-            while(tempX < CANVAS_WIDTH && tempY < CANVAS_HEIGHT + this.size){
+            while(tempX < width && tempY < height + this.size){
                 text(this.letter, tempX, tempY);
                 tempX += this.size;
                 tempY += this.size;
@@ -146,7 +200,7 @@ class Letter{
             //Draw letters down-left of starter
             tempX = this.x - this.size;
             tempY = this.y + this.size;
-            while(tempX > -this.size && tempY < CANVAS_HEIGHT + this.size){
+            while(tempX > -this.size && tempY < height + this.size){
                 text(this.letter, tempX, tempY);
                 tempX -= this.size;
                 tempY += this.size;
@@ -155,7 +209,7 @@ class Letter{
             //Draw letters up-right of starter
             tempX = this.x + this.size;
             tempY = this.y - this.size;
-            while(tempX < CANVAS_WIDTH && tempY > 0){
+            while(tempX < width && tempY > 0){
                 text(this.letter, tempX, tempY);
                 tempX += this.size;
                 tempY -= this.size;
