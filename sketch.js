@@ -7,8 +7,8 @@ let letters = [];
 
 //Letter Constants
 const COLOR_INCR = 160;
-const SPEED_MIN = 2;
-const SPEED_MAX = 20;
+const SPEED_MIN = 1;
+const SPEED_MAX = 15;
 const SIZE_MIN = 20;
 const SIZE_MAX = 120;
 
@@ -27,16 +27,30 @@ let buttonPressed;
 
 //Start message vars
 const START_MESSAGE_TEXT = "#TYPEAWAY";
-let startMessageSize, startMessageX, startMessageY;
+let startMessageFont;
 
 //Font vars
-let mmdFont;
+const FONT_PALLETE = ["fonts/Audiowide/Audiowide-Regular.ttf",
+    "fonts/Bangers/Bangers-Regular.ttf",
+    "fonts/Bungee_Inline/BungeeInline-Regular.ttf",
+    "fonts/Chakra_Petch/ChakraPetch-Regular.ttf",
+    "fonts/Major_Mono_Display/MajorMonoDisplay-Regular.ttf",
+    "fonts/Monoton/Monoton-Regular.ttf",
+    "fonts/Orbitron/Orbitron-Regular.ttf",
+    "fonts/Shojumaru/Shojumaru-Regular.ttf",
+    "fonts/VT323/VT323-Regular.ttf",
+    "fonts/Wallpoet/Wallpoet-Regular.ttf"];
+const font_arr = [];
+
 
 /*
 * Run once before site loads
 */
 function preload(){
     mmdFont = loadFont("fonts/Major_Mono_Display/MajorMonoDisplay-Regular.ttf");
+    for(i = 0; i < FONT_PALLETE.length; i++){
+        font_arr.push(loadFont(FONT_PALLETE[i]));
+    }
 }
 
 /*
@@ -44,26 +58,21 @@ function preload(){
 */
 function setup(){
     createCanvas(windowWidth, windowHeight);
-    textFont(mmdFont);
-    textAlign(CENTER, CENTER);
     buttonPressed = false;
-    startMessageSize = Math.min(width, height) / 10;
-    startMessageX = width/2;
-    startMessageY = height/2;
+    startMessageFont = font_arr[getRandomInt(0, font_arr.length - 1)];
+    displayStartMessage();
 }
 
 /*
 *   Run every frame
 */
 function draw(){
-    if(!buttonPressed){
-        fill("white");
-        textSize(startMessageSize);
-        text(START_MESSAGE_TEXT, startMessageX, startMessageY);
-    }else{
-        //Draw background
-        background(BG_COLOR);
+    //Draw background
+    background(BG_COLOR);
 
+    if(!buttonPressed){
+        displayStartMessage();
+    }else{
         //Draw letters
         for(i = 0; i < letters.length; i++){
             let currLet = letters[i];
@@ -108,7 +117,8 @@ function keyPressed(){
         let clr = color(COLOR_PALLETE[getRandomInt(0, COLOR_PALLETE.length - 1)]);
         let x = getRandomInt(0, width);
         let y = getRandomInt(0, height);
-        let newLetter = new Letter(key, COLOR_INCR, dir, sz, sp, clr, x, y);
+        let letFont = font_arr[getRandomInt(0, font_arr.length - 1)];
+        let newLetter = new Letter(key, COLOR_INCR, dir, sz, sp, clr, x, y, letFont);
 
         letters.push(newLetter);
     }
@@ -122,10 +132,25 @@ function getRandomInt(min, max){
 }
 
 /*
+* Displays start message, randomizing the font
+*/
+function displayStartMessage(){
+    let size = Math.min(width, height) / 10;
+    let x = width/2;
+    let y = height/2;
+
+    fill("white");
+    textSize(size);
+    textAlign(CENTER, CENTER);
+    textFont(startMessageFont);
+    text(START_MESSAGE_TEXT, x, y);
+}
+
+/*
 * Class for Letter object
 */
 class Letter{
-    constructor(letter, fadeRemaining, direction, size, speed, color, x, y){
+    constructor(letter, fadeRemaining, direction, size, speed, color, x, y, font){
         this.letter = letter;
         this.fadeRemaining = fadeRemaining;
         this.direction = direction;
@@ -134,6 +159,7 @@ class Letter{
         this.color = color;
         this.x = x;
         this.y = y;
+        this.font = font;
     }
 
     /*
@@ -141,6 +167,7 @@ class Letter{
     */
     draw(){
         textSize(this.size);
+        textFont(this.font);
         fill(lerpColor(color(BG_COLOR), this.color, this.fadeRemaining/COLOR_INCR));
         text(this.letter, this.x, this.y);
     }
@@ -170,7 +197,7 @@ class Letter{
     * Draw several instances of letter in a line according to direction
     */
     drawAsLine(){
-        //Draw base letter - also sets fill and text size
+        //Draw base letter - also sets fill, text size, and font
         this.draw();
 
         if(this.direction == DIAG_UL || this.direction == DIAG_DR){
